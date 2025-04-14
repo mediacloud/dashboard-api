@@ -10,11 +10,26 @@ import time
 
 import aiohttp
 import fastapi
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi_cache import FastAPICache
 from fastapi_cache.backends.inmemory import InMemoryBackend
 from fastapi_cache.decorator import cache
 
 app = fastapi.FastAPI()
+
+origins = [
+    #"https://mediacloud.github.io",
+    #"http://localhost:5173"
+    "*" #Seems fine for our usecase
+]
+
+app.add_middleware(CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"]
+    )
+
 
 GRAPHITE_HOST = urllib.parse.urlparse(os.environ["STATSD_URL"]).netloc.split(':')[0]
 GRAPHITE_PORT = 81
