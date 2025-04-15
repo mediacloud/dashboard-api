@@ -10,11 +10,24 @@ import time
 
 import aiohttp
 import fastapi
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi_cache import FastAPICache
 from fastapi_cache.backends.inmemory import InMemoryBackend
 from fastapi_cache.decorator import cache
 
 app = fastapi.FastAPI()
+
+origins = [
+    "*" # Accept All Origins seems fine for our usecase
+]
+
+app.add_middleware(CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"]
+    )
+
 
 GRAPHITE_HOST = urllib.parse.urlparse(os.environ["STATSD_URL"]).netloc.split(':')[0]
 GRAPHITE_PORT = 81
