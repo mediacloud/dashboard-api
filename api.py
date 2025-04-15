@@ -18,9 +18,7 @@ from fastapi_cache.decorator import cache
 app = fastapi.FastAPI()
 
 origins = [
-    #"https://mediacloud.github.io",
-    #"http://localhost:5173"
-    "*" #Seems fine for our usecase
+    "*" # Accept All Origins seems fine for our usecase
 ]
 
 app.add_middleware(CORSMiddleware,
