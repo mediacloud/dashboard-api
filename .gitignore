@@ -1,2 +1,7 @@
+# please keep sorted!
+*~
+.pre-commit-run.sh.log
 __pycache__
+dashboard_api.egg-info
+key.sh
 venv
