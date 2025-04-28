@@ -118,14 +118,22 @@ def c(path: str) -> str:
 
 # functions to add graphite functions to metric paths
 def ss(path: str) -> str:
+    """sum (wildcard) series path into one series"""
     return f"sumSeries({path})"
 
 
 def asum(path: str, name: str, func: str = "sum") -> str:
+    """
+    summarize samples for each minute (using `func`: default sum)
+    and apply an alias
+    """
     return f'alias(summarize({path},"1min","{func}"),"{name}")'
 
 
 def amax(path: str, name: str) -> str:
+    """
+    get maximum sample for each minute, and apply an alias
+    """
     return asum(path, name, "max")
 
 
@@ -143,9 +151,14 @@ GRAPHITE_METRICS: list[str] = [
         ),
         "es_documents",
     ),
-    # Sum of requests that made it past rate limiting.
-    # The web-search.cache.total counter has the fewest labels to sum up.
-    asum(ss(c("web-search.cache.total.*.count")), "requests"),
+    # sum total requests served each minute by gunicorn, regardless of status
+    asum(c("web-search.gunicorn.requests.count"), "requests"),
+    # Max working feeds (fetched and successfully parsed document in
+    # last 24 hrs regardless of whether there were new stories found)
+    amax(
+        g("rss-fetcher.rss-fetcher-stats.feeds.recent.hours_24.status_working"),
+        "feeds_working",
+    ),
 ]
 
 # default is from -24h until now
@@ -158,8 +171,7 @@ GRAPHITE_URL = f"{RENDER_URL}?format=json&{GRAPHITE_PARAMS}"
 @cache(expire=DEFAULT_TTL)
 async def v1_stats_get() -> V1_Response:
     """
-    NOTE! Any non-backwards-compatible change should copy this routine
-    and increment the version number!
+    DEPRECATED: DO NOT USE!
     """
     async with aiohttp.ClientSession() as session:
         async with session.get(GRAPHITE_URL) as response:
@@ -183,7 +195,7 @@ async def v2_stats_get() -> V2_Response:
             return v2_wrap(v1_zip_columns(j))
 
 
-################ stories endpoint
+################ stories endpoint: return recent stories
 
 #### original development version: remove soon!
 
@@ -194,6 +206,9 @@ STORIES_URL = f"https://search.mediacloud.org/api/search/story-list?sort_order=d
 @app.get("/v1/stories")
 @cache(expire=DEFAULT_TTL)
 async def v1_stories_get() -> V1_Response:
+    """
+    DEPRECATED
+    """
     async with aiohttp.ClientSession() as session:
         session.headers["Authorization"] = f"Token {MCWEB_TOKEN}"
         async with session.get(STORIES_URL) as response:
