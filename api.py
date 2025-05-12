@@ -65,6 +65,12 @@ async def startup() -> None:
 ################ data formatting (named by version first appears in)
 
 
+def maybe_round(x: float | None, digits: int) -> float | None:
+    if x is None:
+        return x
+    return round(x, digits)
+
+
 def v1_zip_columns(j: list[JSON]) -> list[list[Any]]:
     """
     take data from graphite:
@@ -91,7 +97,7 @@ def v1_zip_columns(j: list[JSON]) -> list[list[Any]]:
         out = [ts0, value0]
         # loop for remaining columns
         for dp_n in datapoints[1:]:
-            out.append(dp_n[i][0])
+            out.append(maybe_round(dp_n[i][0], 1))
         rows.append(out)
         i += 1
     return rows
@@ -116,6 +122,10 @@ def c(path: str) -> str:
     return f"stats.counters.mc.{REALM}.{path}"
 
 
+def t(path: str) -> str:
+    return f"stats.timers.mc.{REALM}.{path}"
+
+
 # functions to add graphite functions to metric paths
 def ss(path: str) -> str:
     """sum (wildcard) series path into one series"""
@@ -135,6 +145,13 @@ def amax(path: str, name: str) -> str:
     get maximum sample for each minute, and apply an alias
     """
     return asum(path, name, "max")
+
+
+def amedian(path: str, name: str) -> str:
+    """
+    get median sample for each minute, and apply an alias
+    """
+    return asum(path, name, "median")
 
 
 ####
@@ -159,6 +176,10 @@ GRAPHITE_METRICS: list[str] = [
         g("rss-fetcher.rss-fetcher-stats.feeds.recent.hours_24.status_working"),
         "feeds_working",
     ),
+    # median of all successful search API requests for each minute
+    amedian(t("web-search.api.success.app_search.median"), "median_search_ms"),
+    # sum of successful document fetches per minute
+    asum(t("rss-fetcher.fetcher.total.status_SUCC.count"), "feed_docs_fetched"),
 ]
 
 # default is from -24h until now
