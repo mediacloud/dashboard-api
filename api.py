@@ -176,8 +176,11 @@ GRAPHITE_METRICS: list[str] = [
         g("rss-fetcher.rss-fetcher-stats.feeds.recent.hours_24.status_working"),
         "feeds_working",
     ),
-    # median of all successful search API requests for each minute
-    amedian(t("web-search.api.success.app_search.median"), "median_search_ms"),
+    # median "college" count-over-time
+    amedian(
+        t("web-search.monitor-api.college.31d.count-over-time.median"),
+        "median_search_ms",
+    ),
     # sum of successful document fetches per minute
     asum(t("rss-fetcher.fetcher.total.status_SUCC.count"), "feed_docs_fetched"),
 ]
