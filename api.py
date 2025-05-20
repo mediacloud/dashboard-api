@@ -5,7 +5,7 @@ backend API for mediacloud dashboard
 import os
 import time
 import urllib.parse
-from typing import Any, TypeAlias, TypedDict, cast
+from typing import Any, TypeAlias, TypedDict
 
 # PyPI
 import aiohttp
@@ -195,20 +195,6 @@ GRAPHITE_PARAMS = "&".join(f"target={m}" for m in GRAPHITE_METRICS)
 GRAPHITE_URL = f"{RENDER_URL}?format=json&{GRAPHITE_PARAMS}"
 
 
-# original development version: remove soon!
-@app.get("/v1/stats")
-@cache(expire=DEFAULT_TTL)
-async def v1_stats_get() -> V1_Response:
-    """
-    DEPRECATED: DO NOT USE!
-    """
-    async with aiohttp.ClientSession() as session:
-        async with session.get(GRAPHITE_URL) as response:
-            j = await response.json()
-            resp = {"cols": v1_zip_columns(j)}
-            return resp
-
-
 @app.get("/v2/stats")
 @cache(expire=DEFAULT_TTL)
 async def v2_stats_get() -> V2_Response:
@@ -226,26 +212,7 @@ async def v2_stats_get() -> V2_Response:
 
 ################ stories endpoint: return recent stories
 
-#### original development version: remove soon!
-
-STORIES_COUNT = 20
-STORIES_URL = f"https://search.mediacloud.org/api/search/story-list?sort_order=desc&page_size={STORIES_COUNT}"
-
-
-@app.get("/v1/stories")
-@cache(expire=DEFAULT_TTL)
-async def v1_stories_get() -> V1_Response:
-    """
-    DEPRECATED
-    """
-    async with aiohttp.ClientSession() as session:
-        session.headers["Authorization"] = f"Token {MCWEB_TOKEN}"
-        async with session.get(STORIES_URL) as response:
-            return cast(V1_Response, await response.json())
-
-
 #### version 2; use random sample
-
 SAMPLE_URL = "https://search.mediacloud.org/api/search/sample"
 
 
