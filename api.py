@@ -176,6 +176,11 @@ GRAPHITE_METRICS: list[str] = [
         g("rss-fetcher.rss-fetcher-stats.feeds.recent.hours_24.status_working"),
         "feeds_working",
     ),
+    # Max sources with working (see above) feeds in last 24 hrs
+    amax(
+        g("rss-fetcher.rss-fetcher-stats.sources.recent.hours_24.status_working"),
+        "sources_feeds_working",
+    ),
     # median "college" count-over-time
     amedian(
         t("web-search.monitor-api.college.31d.count-over-time.median"),
